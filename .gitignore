@@ -1,0 +1,10 @@
+*.exe
+*.ilk
+*.pdb
+*.opensdf
+*.tlog
+*.obj
+*.lastbuildstate
+*.log
+*.dll
+Leap_visualizer/Leap_visualizer/Debug/vc110.idb
