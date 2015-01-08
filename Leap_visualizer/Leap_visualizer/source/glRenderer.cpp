@@ -143,13 +143,13 @@ void glRenderer::drawFloor()
 	// Draw the floor. Match the texture's coordinates and the floor's coordinates resp. 
 	glBegin(GL_POLYGON);
 	glTexCoord2d(0,0);
-	glVertex3d(-12,0,-12);		// Texture's (0,0) is bound to (-12,-0.1,-12).
+	glVertex3d(-24,0,-24);		// Texture's (0,0) is bound to (-12,-0.1,-12).
 	glTexCoord2d(1,0);
-	glVertex3d( 12,0,-12);		// Texture's (1,0) is bound to (12,-0.1,-12).
+	glVertex3d( 24,0,-24);		// Texture's (1,0) is bound to (12,-0.1,-12).
 	glTexCoord2d(1,1);
-	glVertex3d( 12,0, 12);		// Texture's (1,1) is bound to (12,-0.1,12).
+	glVertex3d( 24,0, 24);		// Texture's (1,1) is bound to (12,-0.1,12).
 	glTexCoord2d(0,1);
-	glVertex3d(-12,0, 12);		// Texture's (0,1) is bound to (-12,-0.1,12).
+	glVertex3d(-24,0, 24);		// Texture's (0,1) is bound to (-12,-0.1,12).
 	glEnd();
 
 	glDisable(GL_TEXTURE_2D);	
@@ -263,8 +263,9 @@ void glRenderer::draw(HandsStruct HandData)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();
-	//glTranslatef(0.0f, -9.5f, 27.5f);
+	//glTranslatef(0.0f, 0.0f, 0.0f);
 	drawFloor();
+	drawFrame(5);
 	glPopMatrix();
 
 	glEnable(GL_LIGHTING);
@@ -282,7 +283,7 @@ void glRenderer::draw(HandsStruct HandData)
 	glRotatef(view_rotx, 1.0, 0.0, 0.0);
 	glRotatef(view_roty, 0.0, 1.0, 0.0);
 	glRotatef(view_rotz, 0.0, 0.0, 1.0);
-	//glTranslatef(0.0f, 10.0f, -30.0f);
+	glTranslatef(0.0f, 10.0f, 0.0f);
 }
 
 //void glRenderer::DrawSkelBone(Joint* pJoints, cv::Point3f* pJointPoints, JointType joint0, JointType joint1, GLfloat *t_Color){
