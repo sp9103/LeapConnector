@@ -14,6 +14,8 @@ glRenderer::glRenderer(void)
 
 	m_InitCheck = false;
 
+	mHandInfo.bleft = false;
+	mHandInfo.bright = false;
 }
 
 

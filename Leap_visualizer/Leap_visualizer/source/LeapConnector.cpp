@@ -2,9 +2,6 @@
 
 void LeapConnector::onInit(const Controller& controller) {
 	std::cout << "Initialized" << std::endl;
-
-	mHands.bleft = false;
-	mHands.bright = false;
 }
 
 void LeapConnector::onConnect(const Controller& controller) {

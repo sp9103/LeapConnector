@@ -21,6 +21,7 @@ public:
 	virtual void onServiceConnect(const Controller&);
 	virtual void onServiceDisconnect(const Controller&);
 
+	void InitVal();
 private:
 	HandsStruct mHands;
 	glRenderer renderer;
