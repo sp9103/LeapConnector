@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Leap.h>
 #include <iostream>
 

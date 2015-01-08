@@ -25,7 +25,7 @@ public:
 
 	/*Copy & send to thread*/
 	//루프 안에서 매 프레임마다 호출해줘야함.
-	void SetHandInfo(HandStruct HandInfo);
+	void SetHandInfo(HandsStruct HandInfo);
 
 	//Thread가 정상 종료되길 기다림
 	void WaitUntilThreadDead();
@@ -40,7 +40,7 @@ private:
 	void drawFloor();
 	void drawSphere(double r, int lats, int longs, GLfloat *pColor);
 	void drawhand(HandStruct hand);
-	void DrawSkelBone(Joint* pJoints, cv::Point3f* pJointPoints, JointType joint0, JointType joint1, GLfloat *t_Color);
+	//void DrawSkelBone(Joint* pJoints, cv::Point3f* pJointPoints, JointType joint0, JointType joint1, GLfloat *t_Color);
 
 	static void reshape( GLFWwindow* window, int width, int height );
 
@@ -63,7 +63,7 @@ private:
 	static UINT WINAPI renderThread(LPVOID param); // 쓰레드 함수.
 
 	//Shared Variable. 쓰레드 터지면 이 변수 살펴포기. - 구조체 큐로 변경할까...
-	HandStruct mHandInfo;					//스레드에 넘겨줄 변수.
+	HandsStruct mHandInfo;					//스레드에 넘겨줄 변수.
 
 	GLfloat view_rotx, view_roty, view_rotz;
 	GLfloat view_tranx, view_trany, view_tranz;

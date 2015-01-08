@@ -2,6 +2,9 @@
 
 void LeapConnector::onInit(const Controller& controller) {
 	std::cout << "Initialized" << std::endl;
+
+	mHands.bleft = false;
+	mHands.bright = false;
 }
 
 void LeapConnector::onConnect(const Controller& controller) {
@@ -10,11 +13,17 @@ void LeapConnector::onConnect(const Controller& controller) {
 	controller.enableGesture(Gesture::TYPE_KEY_TAP);
 	controller.enableGesture(Gesture::TYPE_SCREEN_TAP);
 	controller.enableGesture(Gesture::TYPE_SWIPE);
+
+	renderer.InitializeRenderer("Leap motion");
+	renderer.WaitUntilThreadInit();
 }
 
 void LeapConnector::onDisconnect(const Controller& controller) {
 	// Note: not dispatched when running in a debugger.
 	std::cout << "Disconnected" << std::endl;
+
+	renderer.DeInitializeRenderer();
+	renderer.WaitUntilThreadDead();
 }
 
 void LeapConnector::onExit(const Controller& controller) {
@@ -71,24 +80,25 @@ void LeapConnector::onFrame(const Controller& controller) {
 		HandStruct* pHandStr;
 		if(hand.isLeft()){
 			mHands.bleft = true;
-			*pHandStr = mHands.LeftHand;
+			pHandStr = &mHands.LeftHand;
 		}else{
 			mHands.bright = true;
-			*pHandStr = mHands.RightHand;
+			pHandStr = &mHands.RightHand;
 		}
+		pHandStr->Palmpos = hand.palmPosition();
 
 		const Vector normal = hand.palmNormal();
 		const Vector direction = hand.direction();
 		// Calculate the hand's pitch, roll, and yaw angles
 		/*std::cout << std::string(2, ' ') <<  "pitch: " << direction.pitch() * RAD_TO_DEG << " degrees, "
-			<< "roll: " << normal.roll() * RAD_TO_DEG << " degrees, "
-			<< "yaw: " << direction.yaw() * RAD_TO_DEG << " degrees" << std::endl;*/
+		<< "roll: " << normal.roll() * RAD_TO_DEG << " degrees, "
+		<< "yaw: " << direction.yaw() * RAD_TO_DEG << " degrees" << std::endl;*/
 
 		// Get the Arm bone
 		Arm arm = hand.arm();
 		/*std::cout << std::string(2, ' ') <<  "Arm direction: " << arm.direction()
-			<< " wrist position: " << arm.wristPosition()
-			<< " elbow position: " << arm.elbowPosition() << std::endl;*/
+		<< " wrist position: " << arm.wristPosition()
+		<< " elbow position: " << arm.elbowPosition() << std::endl;*/
 		pHandStr->hid = hand.id();
 		pHandStr->Elbowpos = arm.elbowPosition();
 		pHandStr->Wristpos = arm.wristPosition();
@@ -101,8 +111,8 @@ void LeapConnector::onFrame(const Controller& controller) {
 			FingerStruct *pFinger = &pHandStr->Fingers[i++];
 			/*std::cout << std::string(4, ' ') <<  fingerNames[finger.type()]
 			<< " finger, id: " << finger.id()
-				<< ", length: " << finger.length()
-				<< "mm, width: " << finger.width() << std::endl;*/
+			<< ", length: " << finger.length()
+			<< "mm, width: " << finger.width() << std::endl;*/
 
 			// Get finger bones
 			for (int b = 0; b < 4; ++b) {
@@ -111,8 +121,8 @@ void LeapConnector::onFrame(const Controller& controller) {
 				pFinger->FingerBone[b] = bone.nextJoint();
 				/*std::cout << std::string(6, ' ') <<  boneNames[boneType]
 				<< " bone, start: " << bone.prevJoint()
-					<< ", end: " << bone.nextJoint()
-					<< ", direction: " << bone.direction() << std::endl;*/
+				<< ", end: " << bone.nextJoint()
+				<< ", direction: " << bone.direction() << std::endl;*/
 			}
 		}
 	}
@@ -150,42 +160,42 @@ void LeapConnector::onFrame(const Controller& controller) {
 					sweptAngle = (circle.progress() - previousUpdate.progress()) * 2 * PI;
 				}
 				/*std::cout << std::string(2, ' ')
-					<< "Circle id: " << gesture.id()
-					<< ", state: " << stateNames[gesture.state()]
+				<< "Circle id: " << gesture.id()
+				<< ", state: " << stateNames[gesture.state()]
 				<< ", progress: " << circle.progress()
-					<< ", radius: " << circle.radius()
-					<< ", angle " << sweptAngle * RAD_TO_DEG
-					<<  ", " << clockwiseness << std::endl;*/
+				<< ", radius: " << circle.radius()
+				<< ", angle " << sweptAngle * RAD_TO_DEG
+				<<  ", " << clockwiseness << std::endl;*/
 				break;
 			}
 		case Gesture::TYPE_SWIPE:
 			{
 				SwipeGesture swipe = gesture;
 				/*std::cout << std::string(2, ' ')
-					<< "Swipe id: " << gesture.id()
-					<< ", state: " << stateNames[gesture.state()]
+				<< "Swipe id: " << gesture.id()
+				<< ", state: " << stateNames[gesture.state()]
 				<< ", direction: " << swipe.direction()
-					<< ", speed: " << swipe.speed() << std::endl;*/
+				<< ", speed: " << swipe.speed() << std::endl;*/
 				break;
 			}
 		case Gesture::TYPE_KEY_TAP:
 			{
 				KeyTapGesture tap = gesture;
 				/*std::cout << std::string(2, ' ')
-					<< "Key Tap id: " << gesture.id()
-					<< ", state: " << stateNames[gesture.state()]
+				<< "Key Tap id: " << gesture.id()
+				<< ", state: " << stateNames[gesture.state()]
 				<< ", position: " << tap.position()
-					<< ", direction: " << tap.direction()<< std::endl;*/
+				<< ", direction: " << tap.direction()<< std::endl;*/
 				break;
 			}
 		case Gesture::TYPE_SCREEN_TAP:
 			{
 				ScreenTapGesture screentap = gesture;
 				/*std::cout << std::string(2, ' ')
-					<< "Screen Tap id: " << gesture.id()
-					<< ", state: " << stateNames[gesture.state()]
+				<< "Screen Tap id: " << gesture.id()
+				<< ", state: " << stateNames[gesture.state()]
 				<< ", position: " << screentap.position()
-					<< ", direction: " << screentap.direction()<< std::endl;*/
+				<< ", direction: " << screentap.direction()<< std::endl;*/
 				break;
 			}
 		default:
@@ -195,7 +205,7 @@ void LeapConnector::onFrame(const Controller& controller) {
 	}
 
 	//그리는 thread로 넘겨줌
-	//....
+	renderer.SetHandInfo(mHands);
 
 	if (!frame.hands().isEmpty() || !gestures.isEmpty()) {
 		std::cout << std::endl;

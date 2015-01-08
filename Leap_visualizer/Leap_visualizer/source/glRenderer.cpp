@@ -4,8 +4,8 @@
 
 glRenderer::glRenderer(void)
 {
-	view_rotx = 10.f, view_roty = 180.f, view_rotz = 0.f;
-	view_tranx = 0.0f, view_trany = -5.0f, view_tranz = -40.f;
+	view_rotx = 0.f, view_roty = 0.f, view_rotz = 0.f;
+	view_tranx = 0.0f, view_trany = .0f, view_tranz = .0f;
 
 	//Thread Run!
 	m_EndThread = false;
@@ -261,8 +261,8 @@ void glRenderer::draw(HandsStruct HandData)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();
-	glTranslatef(0.0f, -9.5f, 27.5f);
-	//drawFloor();
+	//glTranslatef(0.0f, -9.5f, 27.5f);
+	drawFloor();
 	glPopMatrix();
 
 	glEnable(GL_LIGHTING);
@@ -280,40 +280,40 @@ void glRenderer::draw(HandsStruct HandData)
 	glRotatef(view_rotx, 1.0, 0.0, 0.0);
 	glRotatef(view_roty, 0.0, 1.0, 0.0);
 	glRotatef(view_rotz, 0.0, 0.0, 1.0);
-	glTranslatef(0.0f, 10.0f, -30.0f);
+	//glTranslatef(0.0f, 10.0f, -30.0f);
 }
 
-void glRenderer::DrawSkelBone(Joint* pJoints, cv::Point3f* pJointPoints, JointType joint0, JointType joint1, GLfloat *t_Color){
-	static const float sphereRad = .2;
-	static const float cylinderRad = .3;
-	static const int tSlice = 10;
-
-	cv::Point3f temp = pJointPoints[joint1] - pJointPoints[joint0];
-
-	//handle the degenerate case of z1 == z2 with an approximation
-	if(temp.z == 0)
-		temp.z = .0001;
-
-	float v = sqrt( temp.x*temp.x + temp.y*temp.y + temp.z*temp.z );
-	float ax = 57.2957795*acos( temp.z/v );
-	if ( temp.z < 0.0 )
-		ax = -ax;
-	float rx = -temp.y*temp.z;
-	float ry = temp.x*temp.z;
-
-	GLUquadric *quadric;
-	quadric = gluNewQuadric();
-
-	glPushMatrix();
-	glTranslatef(pJointPoints[joint0].x, pJointPoints[joint0].y, pJointPoints[joint0].z);
-	gluSphere(quadric, sphereRad, tSlice, tSlice);
-	glRotatef(ax, rx, ry, 0.0);
-	gluQuadricOrientation(quadric,GLU_OUTSIDE);
-	gluCylinder(quadric, cylinderRad, cylinderRad, v, tSlice, tSlice);
-	glPopMatrix();
-
-	gluDeleteQuadric(quadric);
-}
+//void glRenderer::DrawSkelBone(Joint* pJoints, cv::Point3f* pJointPoints, JointType joint0, JointType joint1, GLfloat *t_Color){
+//	static const float sphereRad = .2;
+//	static const float cylinderRad = .3;
+//	static const int tSlice = 10;
+//
+//	cv::Point3f temp = pJointPoints[joint1] - pJointPoints[joint0];
+//
+//	//handle the degenerate case of z1 == z2 with an approximation
+//	if(temp.z == 0)
+//		temp.z = .0001;
+//
+//	float v = sqrt( temp.x*temp.x + temp.y*temp.y + temp.z*temp.z );
+//	float ax = 57.2957795*acos( temp.z/v );
+//	if ( temp.z < 0.0 )
+//		ax = -ax;
+//	float rx = -temp.y*temp.z;
+//	float ry = temp.x*temp.z;
+//
+//	GLUquadric *quadric;
+//	quadric = gluNewQuadric();
+//
+//	glPushMatrix();
+//	glTranslatef(pJointPoints[joint0].x, pJointPoints[joint0].y, pJointPoints[joint0].z);
+//	gluSphere(quadric, sphereRad, tSlice, tSlice);
+//	glRotatef(ax, rx, ry, 0.0);
+//	gluQuadricOrientation(quadric,GLU_OUTSIDE);
+//	gluCylinder(quadric, cylinderRad, cylinderRad, v, tSlice, tSlice);
+//	glPopMatrix();
+//
+//	gluDeleteQuadric(quadric);
+//}
 
 void glRenderer::drawhand(HandStruct hand){
 	int32_t hid = hand.hid;
@@ -324,51 +324,65 @@ void glRenderer::drawhand(HandStruct hand){
 	glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, tColor);
 
 	/////////////////////Draw Joint////////////////////////////////////
-	cv::Point3f gljointpoints[JointType_Count];
-	for(int i = 0; i < JointType_Count; i++)
-		glTransformCoordinate(tBody.JointPos[i], &gljointpoints[i]);			//Transformation -> Image coordinate
+	// Palm
+	GLUquadric *quadric;
+	quadric = gluNewQuadric();
+	glPushMatrix();
+	glTranslatef(hand.Palmpos.x, hand.Palmpos.y, hand.Palmpos.z);
+	gluSphere(quadric, .2, 10, 10);
+	glPopMatrix();
+
+	// thumb
+
+	// index
+
+	// middle
 	
-	// Torso
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_Head, JointType_Neck, tColor);
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_Neck, JointType_SpineShoulder, tColor);
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_SpineShoulder, JointType_SpineMid, tColor);
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_SpineMid, JointType_SpineBase, tColor);
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_SpineShoulder, JointType_ShoulderRight, tColor);
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_SpineShoulder, JointType_ShoulderLeft, tColor);
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_SpineBase, JointType_HipRight, tColor);
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_SpineBase, JointType_HipLeft, tColor);
+	// ring
 
-	// Right Arm
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_ShoulderRight, JointType_ElbowRight, tColor);
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_ElbowRight, JointType_WristRight, tColor);
-	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_WristRight, JointType_HandRight, tColor);
-	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_HandRight, JointType_HandTipRight, tColor);
-	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_WristRight, JointType_ThumbRight, tColor);
+	// pinky
+	
+	//// Torso
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_Head, JointType_Neck, tColor);
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_Neck, JointType_SpineShoulder, tColor);
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_SpineShoulder, JointType_SpineMid, tColor);
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_SpineMid, JointType_SpineBase, tColor);
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_SpineShoulder, JointType_ShoulderRight, tColor);
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_SpineShoulder, JointType_ShoulderLeft, tColor);
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_SpineBase, JointType_HipRight, tColor);
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_SpineBase, JointType_HipLeft, tColor);
 
-	// Left Arm
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_ShoulderLeft, JointType_ElbowLeft, tColor);
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_ElbowLeft, JointType_WristLeft, tColor);
-	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_WristLeft, JointType_HandLeft, tColor);
-	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_HandLeft, JointType_HandTipLeft, tColor);
-	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_WristLeft, JointType_ThumbLeft, tColor);
+	//// Right Arm
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_ShoulderRight, JointType_ElbowRight, tColor);
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_ElbowRight, JointType_WristRight, tColor);
+	////DrawSkelBone(tBody.JointPos, gljointpoints, JointType_WristRight, JointType_HandRight, tColor);
+	////DrawSkelBone(tBody.JointPos, gljointpoints, JointType_HandRight, JointType_HandTipRight, tColor);
+	////DrawSkelBone(tBody.JointPos, gljointpoints, JointType_WristRight, JointType_ThumbRight, tColor);
 
-	// Right Leg
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_HipRight, JointType_KneeRight, tColor);
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_KneeRight, JointType_AnkleRight, tColor);
-	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_AnkleRight, JointType_FootRight, tColor);
+	//// Left Arm
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_ShoulderLeft, JointType_ElbowLeft, tColor);
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_ElbowLeft, JointType_WristLeft, tColor);
+	////DrawSkelBone(tBody.JointPos, gljointpoints, JointType_WristLeft, JointType_HandLeft, tColor);
+	////DrawSkelBone(tBody.JointPos, gljointpoints, JointType_HandLeft, JointType_HandTipLeft, tColor);
+	////DrawSkelBone(tBody.JointPos, gljointpoints, JointType_WristLeft, JointType_ThumbLeft, tColor);
 
-	// Left Leg
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_HipLeft, JointType_KneeLeft, tColor);
-	DrawSkelBone(tBody.JointPos, gljointpoints, JointType_KneeLeft, JointType_AnkleLeft, tColor);
-	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_AnkleLeft, JointType_FootLeft, tColor);
-	///////////////////////////////////////////////////////////////////
+	//// Right Leg
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_HipRight, JointType_KneeRight, tColor);
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_KneeRight, JointType_AnkleRight, tColor);
+	////DrawSkelBone(tBody.JointPos, gljointpoints, JointType_AnkleRight, JointType_FootRight, tColor);
+
+	//// Left Leg
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_HipLeft, JointType_KneeLeft, tColor);
+	//DrawSkelBone(tBody.JointPos, gljointpoints, JointType_KneeLeft, JointType_AnkleLeft, tColor);
+	////DrawSkelBone(tBody.JointPos, gljointpoints, JointType_AnkleLeft, JointType_FootLeft, tColor);
+	/////////////////////////////////////////////////////////////////////
 
 	glPopMatrix();
 
 
 }
 
-void glRenderer::SetHandInfo(HandStruct HandInfo){
+void glRenderer::SetHandInfo(HandsStruct HandInfo){
 	EnterCriticalSection(&m_cs);
 	memcpy(&mHandInfo, &HandInfo, sizeof(HandInfo));
 	LeaveCriticalSection(&m_cs);

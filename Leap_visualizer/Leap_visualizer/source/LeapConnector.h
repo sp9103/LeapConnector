@@ -23,6 +23,6 @@ public:
 
 private:
 	HandsStruct mHands;
-
+	glRenderer renderer;
 };
 
