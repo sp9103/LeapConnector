@@ -1,5 +1,5 @@
-#include <iostream>
-#include <Leap.h>
+#include "define.h"
+#include "glRenderer.h"
 
 using namespace Leap;
 
@@ -22,5 +22,7 @@ public:
 	virtual void onServiceDisconnect(const Controller&);
 
 private:
+	HandsStruct mHands;
+
 };
 

@@ -20,7 +20,6 @@ glRenderer::glRenderer(void)
 glRenderer::~glRenderer(void)
 {
 	m_EnableThread = false;
-	free(m_BodyInfo);
 }
 
 void glRenderer::InitializeRenderer(char *name){
@@ -50,7 +49,7 @@ void glRenderer::DeInitializeRenderer(){
 /* change view angle, exit upon ESC */
 void glRenderer::key( GLFWwindow* window, int k, int s, int action, int mods )
 {
-	glBodyRenderer* tClass = reinterpret_cast<glBodyRenderer *>(glfwGetWindowUserPointer(window));
+	glRenderer* tClass = reinterpret_cast<glRenderer *>(glfwGetWindowUserPointer(window));
 	switch (k) {
 	case GLFW_KEY_Z:
 		if( mods & GLFW_MOD_SHIFT )
@@ -86,7 +85,7 @@ void glRenderer::key( GLFWwindow* window, int k, int s, int action, int mods )
 
 void glRenderer::scroll_callback(GLFWwindow* window, double x, double y){
 	static const float tran_acc = 2.0f;
-	glBodyRenderer* tClass = reinterpret_cast<glBodyRenderer *>(glfwGetWindowUserPointer(window));
+	glRenderer* tClass = reinterpret_cast<glRenderer *>(glfwGetWindowUserPointer(window));
 	//view_tranx += y;
 	tClass->view_trany += tran_acc/8.f*y;
 	tClass->view_tranz += tran_acc*y;
@@ -244,10 +243,10 @@ void glRenderer::init()
 	glEnable(GL_NORMALIZE);
 }
 
-void glRenderer::Display(SkeletonInfo *JointData, int numKinect)
+void glRenderer::Display(HandsStruct HandData)
 {
 	// Draw
-	draw(JointData, numKinect);
+	draw(HandData);
 
 	// Swap buffers
 	glfwSwapBuffers(m_window);
@@ -256,24 +255,23 @@ void glRenderer::Display(SkeletonInfo *JointData, int numKinect)
 
 /* OpenGL draw function & timing */
 //거꾸로 생각해야되네
-void glRenderer::draw(SkeletonInfo *JointData, int numKinect)
+void glRenderer::draw(HandsStruct HandData)
 {
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	glPushMatrix();
 	glTranslatef(0.0f, -9.5f, 27.5f);
-	drawFloor();
+	//drawFloor();
 	glPopMatrix();
 
 	glEnable(GL_LIGHTING);
 	glShadeModel(GL_SMOOTH);
 
-	for(int i = 0; i < numKinect; i++){
-		for(int j = 0; j < JointData[i].Count; j++){
-			drawBody(JointData[i].InfoBody[j]);
-		}
-	}
+	if(HandData.bleft)
+		drawhand(HandData.LeftHand);
+	if(HandData.bright)
+		drawhand(HandData.RightHand);
 
 	drawFrame(5);
 	glMatrixMode( GL_MODELVIEW );				//ModelView가 카메라
@@ -317,9 +315,9 @@ void glRenderer::DrawSkelBone(Joint* pJoints, cv::Point3f* pJointPoints, JointTy
 	gluDeleteQuadric(quadric);
 }
 
-void glRenderer::drawBody(BodyInfo tBody){
-	UINT64 tBodyID = tBody.BodyID;
-	GLfloat tColor[4] = {(tBodyID*37)%256/255.f, (tBodyID*113)%256/255.f, (tBodyID*71)%256/255.f};
+void glRenderer::drawhand(HandStruct hand){
+	int32_t hid = hand.hid;
+	GLfloat tColor[4] = {(hid*37)%256/255.f, (hid*113)%256/255.f, (hid*71)%256/255.f};
 
 	glPushMatrix();
 
@@ -370,35 +368,16 @@ void glRenderer::drawBody(BodyInfo tBody){
 
 }
 
-void glRenderer::glTransformCoordinate(Joint src, cv::Point3f *dst){
-	static const float scale = 5.f;
-
-	cv::Mat t_src = (cv::Mat_<float>(4,1) << src.Position.X * 10.f, src.Position.Y * 10.f, src.Position.Z * 10.f, 1.);
-	cv::Mat t_dst = (cv::Mat_<float>(4,1) << src.Position.X * 10.f, src.Position.Y * 10.f, src.Position.Z * 10.f, 1.);	//initialize
-
-	//printf("%d %d\n", TransformMat.rows, TransformMat.cols);
-	t_dst = TransformMat*t_src;
-
-	float _w = t_dst.at<float>(3,0);
-	//printf("_w : %f\n", _w);
-	dst->x = t_dst.at<float>(0,0) / _w;
-	dst->y = t_dst.at<float>(1,0) / _w;
-	dst->z = t_dst.at<float>(2,0) / _w;
-}
-
-void glRenderer::SetBodyInfo(SkeletonInfo *srcBodyInfo){
-
-	for(int i = 0; i < m_numKinect; i++)	if(srcBodyInfo[i].Count == -1)	return;
-
+void glRenderer::SetHandInfo(HandStruct HandInfo){
 	EnterCriticalSection(&m_cs);
-	memcpy(m_BodyInfo, srcBodyInfo, sizeof(SkeletonInfo)*m_numKinect);
+	memcpy(&mHandInfo, &HandInfo, sizeof(HandInfo));
 	LeaveCriticalSection(&m_cs);
 }
 
 UINT WINAPI glRenderer::renderThread(LPVOID param){
-	glBodyRenderer *t_glBodyRenderer = (glBodyRenderer *)param;
+	glRenderer *t_glRenderer = (glRenderer *)param;
 	//SkeletonInfo *threadBodyInfo;
-	SkeletonInfo threadBodyInfo[KINECT_COUNT];
+	HandsStruct threadHandInfo;
 
 	//Thread Initialize..
 	printf("Thread Initialize start...\n");
@@ -410,9 +389,9 @@ UINT WINAPI glRenderer::renderThread(LPVOID param){
 
 	glfwWindowHint(GLFW_DEPTH_BITS, 160);
 
-	t_glBodyRenderer->m_window = glfwCreateWindow( 640, 480, t_glBodyRenderer->WindowName, NULL, NULL );
-	glfwSetWindowUserPointer(t_glBodyRenderer->m_window, t_glBodyRenderer);
-	if (!t_glBodyRenderer->m_window)
+	t_glRenderer->m_window = glfwCreateWindow( 640, 480, t_glRenderer->WindowName, NULL, NULL );
+	glfwSetWindowUserPointer(t_glRenderer->m_window, t_glRenderer);
+	if (!t_glRenderer->m_window)
 	{
 		fprintf( stderr, "Failed to open GLFW window\n" );
 		glfwTerminate();
@@ -421,33 +400,33 @@ UINT WINAPI glRenderer::renderThread(LPVOID param){
 
 	// Set callback functions
 
-	glfwSetFramebufferSizeCallback(t_glBodyRenderer->m_window, t_glBodyRenderer->reshape);
-	glfwSetKeyCallback(t_glBodyRenderer->m_window, t_glBodyRenderer->key);
-	glfwSetScrollCallback(t_glBodyRenderer->m_window, scroll_callback);
+	glfwSetFramebufferSizeCallback(t_glRenderer->m_window, t_glRenderer->reshape);
+	glfwSetKeyCallback(t_glRenderer->m_window, t_glRenderer->key);
+	glfwSetScrollCallback(t_glRenderer->m_window, scroll_callback);
 
-	glfwMakeContextCurrent(t_glBodyRenderer->m_window);
+	glfwMakeContextCurrent(t_glRenderer->m_window);
 	glfwSwapInterval( 1 );
 
-	glfwGetFramebufferSize(t_glBodyRenderer->m_window, &t_glBodyRenderer->m_width, &t_glBodyRenderer->m_height);
-	reshape(t_glBodyRenderer->m_window, t_glBodyRenderer->m_width, t_glBodyRenderer->m_height);
+	glfwGetFramebufferSize(t_glRenderer->m_window, &t_glRenderer->m_width, &t_glRenderer->m_height);
+	reshape(t_glRenderer->m_window, t_glRenderer->m_width, t_glRenderer->m_height);
 
 	// Parse command-line options
-	t_glBodyRenderer->init();
+	t_glRenderer->init();
 	printf("Thread Initialize complete!\n");
-	t_glBodyRenderer->m_InitCheck = true;
+	t_glRenderer->m_InitCheck = true;
 
 	//Thread run...
-	while(!glfwWindowShouldClose(t_glBodyRenderer->m_window) || t_glBodyRenderer->m_EnableThread){ 
+	while(!glfwWindowShouldClose(t_glRenderer->m_window) || t_glRenderer->m_EnableThread){ 
 
-		EnterCriticalSection(&t_glBodyRenderer->m_cs);
-		memcpy(threadBodyInfo, t_glBodyRenderer->m_BodyInfo, sizeof(SkeletonInfo)*t_glBodyRenderer->m_numKinect); 
-		LeaveCriticalSection(&t_glBodyRenderer->m_cs);
+		EnterCriticalSection(&t_glRenderer->m_cs);
+		memcpy(&threadHandInfo, &t_glRenderer->mHandInfo, sizeof(HandsStruct)); 
+		LeaveCriticalSection(&t_glRenderer->m_cs);
 
-		t_glBodyRenderer->Display(threadBodyInfo, t_glBodyRenderer->m_numKinect);
+		t_glRenderer->Display(threadHandInfo);
 	}
 
 	//Thread exit...
-	t_glBodyRenderer->m_EndThread = true;
+	t_glRenderer->m_EndThread = true;
 
 	return 0;
 }

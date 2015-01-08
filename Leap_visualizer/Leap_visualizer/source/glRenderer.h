@@ -1,4 +1,5 @@
 #include "Thread.h"
+#include "define.h"
 
 #include <mutex>
 #include <Windows.h>
@@ -24,7 +25,7 @@ public:
 
 	/*Copy & send to thread*/
 	//루프 안에서 매 프레임마다 호출해줘야함.
-	void SetBodyInfo(SkeletonInfo *srcBodyInfo);
+	void SetHandInfo(HandStruct HandInfo);
 
 	//Thread가 정상 종료되길 기다림
 	void WaitUntilThreadDead();
@@ -34,11 +35,11 @@ private:
 	static void key( GLFWwindow* window, int k, int s, int action, int mods );
 	static void scroll_callback(GLFWwindow* window, double x, double y);
 
-	void draw(SkeletonInfo *JointData, int numKinect);
+	void draw(HandsStruct HandData);
 	void drawFrame(float len);
 	void drawFloor();
 	void drawSphere(double r, int lats, int longs, GLfloat *pColor);
-	void drawBody(BodyInfo tBody);
+	void drawhand(HandStruct hand);
 	void DrawSkelBone(Joint* pJoints, cv::Point3f* pJointPoints, JointType joint0, JointType joint1, GLfloat *t_Color);
 
 	static void reshape( GLFWwindow* window, int width, int height );
@@ -52,9 +53,7 @@ private:
 	int m_numKinect;
 	unsigned m_floorTexID;
 
-	/*input : Skeleton Info Array
-	numKinect : number of Kinect.(to Rendering)*/
-	void Display(SkeletonInfo *JointData, int numKinect);											//나중에 스켈레톤 받아오기
+	void Display(HandsStruct JointData);
 
 	//For Multi Threading
 	CRITICAL_SECTION m_cs;
@@ -64,7 +63,7 @@ private:
 	static UINT WINAPI renderThread(LPVOID param); // 쓰레드 함수.
 
 	//Shared Variable. 쓰레드 터지면 이 변수 살펴포기. - 구조체 큐로 변경할까...
-	SkeletonInfo *m_BodyInfo;					//스레드에 넘겨줄 변수.
+	HandStruct mHandInfo;					//스레드에 넘겨줄 변수.
 
 	GLfloat view_rotx, view_roty, view_rotz;
 	GLfloat view_tranx, view_trany, view_tranz;

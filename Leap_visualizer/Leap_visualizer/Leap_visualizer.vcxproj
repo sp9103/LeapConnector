@@ -17,7 +17,7 @@
     <ClCompile Include="source\Thread.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="define.h" />
+    <ClInclude Include="source\define.h" />
     <ClInclude Include="source\glRenderer.h" />
     <ClInclude Include="source\LeapConnector.h" />
     <ClInclude Include="source\Thread.h" />
