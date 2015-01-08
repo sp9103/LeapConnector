@@ -10,6 +10,18 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="source\glRenderer.cpp" />
+    <ClCompile Include="source\LeapConnector.cpp" />
+    <ClCompile Include="source\main.cpp" />
+    <ClCompile Include="source\Thread.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="define.h" />
+    <ClInclude Include="source\glRenderer.h" />
+    <ClInclude Include="source\LeapConnector.h" />
+    <ClInclude Include="source\Thread.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{C171BE12-CF93-43A6-83ED-779425AE035F}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
@@ -41,8 +53,8 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>C:\Leap_Motion_SDK_Windows_2.2.1\LeapDeveloperKit_2.2.1+24116_win\LeapSDK\include;$(IncludePath)</IncludePath>
-    <LibraryPath>C:\Leap_Motion_SDK_Windows_2.2.1\LeapDeveloperKit_2.2.1+24116_win\LeapSDK\lib\x86;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Leap_Motion_SDK_Windows_2.2.1\LeapDeveloperKit_2.2.1+24116_win\LeapSDK\include;C:\glfw-3.0.4.bin.WIN32\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Leap_Motion_SDK_Windows_2.2.1\LeapDeveloperKit_2.2.1+24116_win\LeapSDK\lib\x86;C:\glfw-3.0.4.bin.WIN32\lib-msvc110;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -58,7 +70,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>Leapd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Leapd.lib;glfw3.lib;glfw3dll.lib;opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -78,13 +90,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="LeapConnector.cpp" />
-    <ClCompile Include="main.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="LeapConnector.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
